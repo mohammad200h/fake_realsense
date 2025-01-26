@@ -2,7 +2,62 @@ from setuptools import find_packages, setup
 import os
 from glob import glob
 
+from setuptools.command.build_py import build_py
+import subprocess
+
+import zipfile
+
 package_name = 'fake_realsense'
+
+
+
+def install_gdown():
+    try:
+      subprocess.check_call(['pip3','install','gdown'])
+    except subprocess.CalledProcessError as e:
+      print(f'Error installing gdown: {e}')
+      raise
+
+def download():
+
+  print("\n\n")
+  print("Runing BUild....bro!")
+  print("\n\n")
+   # Ensure the demo_data directory exists
+  demo_data_dir = os.path.join(package_name, 'demo_data')
+  os.makedirs(demo_data_dir, exist_ok=True)
+  # Download the Google Drive folder using gdown
+  google_drive_folder_url = 'https://drive.google.com/drive/folders/1pRyFmxYXmAnpku7nGRioZaKrVJtIsroP'
+  try:
+      print(f'Downloading Google Drive folder: {google_drive_folder_url}')
+      subprocess.check_call([
+          'gdown', '--folder', google_drive_folder_url, '-O', demo_data_dir
+      ])
+      print('Google Drive download complete.')
+  except subprocess.CalledProcessError as e:
+      print(f'Error downloading Google Drive folder: {e}')
+      raise
+  # Proceed with the rest of the build process
+
+def extract_mustard0():
+
+    demo_data_dir = os.path.join(package_name, 'demo_data')
+    mustard_zip_path = os.path.join(demo_data_dir, 'mustard0.zip')  # Path to the mustard0.zip file
+
+    if os.path.exists(mustard_zip_path):
+        with zipfile.ZipFile(mustard_zip_path, 'r') as zip_ref:
+            # Only extract the contents of mustard0.zip
+            zip_ref.extractall(demo_data_dir)
+
+    else:
+        print(f"File {mustard_zip_path} not found. Skipping extraction.")
+
+
+install_gdown()
+download()
+extract_mustard0()
+
+
 
 setup(
     name=package_name,
@@ -19,8 +74,8 @@ setup(
           if filename.endswith('.png')
         ]),
         # mustard0 mesh
-        ('lib/python3.10/site-packages/' + package_name +'/demo_data/mustard0/',[
-          package_name + '/demo_data/mustard0/mustard0.obj']),
+        ('lib/python3.10/site-packages/' + package_name +'/demo_data/mustard0/mesh/',[
+          package_name + '/demo_data/mustard0/mesh/textured_simple.obj']),
         # mustard0 depth
         ('lib/python3.10/site-packages/' + package_name +'/demo_data/mustard0/depth/',[
           package_name + f'/demo_data/mustard0/depth/{filename}'for filename in
